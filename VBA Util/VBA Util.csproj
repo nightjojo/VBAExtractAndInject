@@ -71,6 +71,7 @@
     </Compile>
     <Compile Include="Extract.cs" />
     <Compile Include="Inject.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="MainLogic.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

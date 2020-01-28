@@ -254,8 +254,17 @@ namespace VBA_Util
                 return;
             }
             MainLogic mainLogic = GetLogicInstance(_tab);
+            // acquire pwd from optional file(target filename plus ".pwd" without quotes)
+            string pwd = "";
+            if (File.Exists(_target + ".pwd"))
+            {
+                using (StreamReader sr = new StreamReader(_target + ".pwd", Encoding.UTF8))
+                {
+                    pwd = sr.ReadToEnd();
+                }
+            }
             if (_srcDir.Substring(_srcDir.Length - 2, 1) != "\\") _srcDir += "\\";
-            if (!mainLogic.ProcessFile(_target, _srcDir))
+            if (!mainLogic.ProcessFile(_target, _srcDir, pwd))
             {
                 MessageBox.Show("Error occured during process.\r\n See error log for detail");
                 _worker.CancelAsync();
