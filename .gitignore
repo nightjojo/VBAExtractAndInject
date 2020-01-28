@@ -33,3 +33,8 @@ VBA Util/bin/Debug/Microsoft.WindowsAPICodePack.xml
 VBA Util/bin/Debug/VBA Util.exe
 VBA Util/bin/Debug/VBA Util.exe.config
 VBA Util/bin/Debug/VBA Util.pdb
+.vs/VBAutil/v15/Server/sqlite3/storage.ide-wal
+.vs/VBAutil/v15/Server/sqlite3/storage.ide-shm
+.vs/VBAutil/v15/Server/sqlite3/storage.ide
+.vs/VBAutil/v15/Server/sqlite3/db.lock
+.vs/VBAutil/v15/.suo
