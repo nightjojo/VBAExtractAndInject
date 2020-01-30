@@ -58,6 +58,9 @@ namespace VBA_Util
                             break;
                         }
                         var hwnd = FindWindowA(null, pjtname + " Password");
+                        // Jpn support
+                        if (hwnd == IntPtr.Zero)
+                            hwnd = FindWindowA(null, pjtname + " パスワード");
                         if (hwnd == IntPtr.Zero) return;
                         //find password textbox
                         var hpwd = FindWindowExA(hwnd, IntPtr.Zero, "Edit", null);
@@ -92,8 +95,14 @@ namespace VBA_Util
                         break;
                     }
                     var hwnd = FindWindowA(null, pjtname + " - Project Properties");
+                    // Jpn support
+                    if (hwnd == IntPtr.Zero)
+                        hwnd = FindWindowA(null, pjtname + " - プロジェクト プロパティ");
                     // find cancel button
                     var hbtn = FindWindowExA(hwnd, IntPtr.Zero, null, "Cancel");
+                    // Jpn support
+                    if (hbtn == IntPtr.Zero)
+                        hbtn = FindWindowExA(hwnd, IntPtr.Zero, null, "キャンセル");
                     if (hbtn != IntPtr.Zero)
                         SendMessage(hbtn, BM_CLICK, IntPtr.Zero, null);
                     if (AccApp != null)
