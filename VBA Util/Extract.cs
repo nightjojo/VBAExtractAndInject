@@ -76,7 +76,7 @@ namespace VBA_Util
                             FileMode.Create, FileAccess.Write))
             {
                 var contents = module.Lines[1, module.CountOfLines];
-                sw.Write(Encoding.Unicode.GetBytes(contents), 0, Encoding.Unicode.GetByteCount(contents));
+                sw.Write(Encoding.UTF8.GetBytes(contents), 0, Encoding.UTF8.GetByteCount(contents));
             }
         }
     }

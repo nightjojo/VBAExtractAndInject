@@ -22,7 +22,7 @@ namespace VBA_Util
                 sb.AppendLine("HResult: " + ex.HResult);
                 sb.AppendLine(ex.Message);
                 sb.AppendLine(ex.StackTrace);
-                sw.Write(Encoding.Unicode.GetBytes(sb.ToString()), 0, Encoding.Unicode.GetByteCount(sb.ToString()));
+                sw.Write(Encoding.UTF8.GetBytes(sb.ToString()), 0, Encoding.UTF8.GetByteCount(sb.ToString()));
             }
         }
     }

@@ -48,7 +48,7 @@ namespace VBA_Util
             {
                 var fName = Path.GetFileNameWithoutExtension(srcFile);
                 string srcContent = null;
-                using (var sr = new StreamReader(srcFile, Encoding.Unicode))
+                using (var sr = new StreamReader(srcFile, Encoding.UTF8))
                 {
                     srcContent = sr.ReadToEnd();
                 }
