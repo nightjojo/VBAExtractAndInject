@@ -46,7 +46,7 @@ namespace VBA_Util
                         AccApp = new Access.Application();
                         //AccApp.Visible = false;
                         AccApp.OpenCurrentDatabase(tgtFile, true, pwd);
-                        AccApp.Visible = false;
+                        //AccApp.Visible = false;
                         CommandBarControl ctrl = AccApp.VBE.CommandBars[1].FindControl(Id: 2578, Recursive: true);
                         Console.WriteLine(ctrl.Caption);
                         ctrl.Execute();
@@ -68,6 +68,18 @@ namespace VBA_Util
                         SendMessage(hpwd, WM_SETTEXT, IntPtr.Zero, pwd);
                         // find OK button
                         var hbtn = FindWindowExA(hwnd, IntPtr.Zero, null, "OK");
+                        if (hbtn != IntPtr.Zero)
+                            SendMessage(hbtn, BM_CLICK, IntPtr.Zero, null);
+                        System.Threading.Thread.Sleep(500);
+                        // find "properties" dialog
+                        hwnd = FindWindowA(null, pjtname + " - Project Properties");
+                        // Jpn support
+                        if (hwnd == IntPtr.Zero)
+                            hwnd = FindWindowA(null, pjtname + " - プロジェクト プロパティ");
+                        if (hwnd == IntPtr.Zero) return;
+                        // find OK button(2nd)
+                        hbtn = FindWindowExA(hwnd, IntPtr.Zero, null, "OK");
+                        // Jpn support
                         if (hbtn != IntPtr.Zero)
                             SendMessage(hbtn, BM_CLICK, IntPtr.Zero, null);
                     }

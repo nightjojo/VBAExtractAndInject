@@ -15,11 +15,10 @@ namespace VBA_Util
         {
             if (Regex.IsMatch(Path.GetExtension(tgtFile), ".*accd.*"))
             {
-                Access.Application app = null;
                 try
                 {
                     OpenApplication(tgtFile, TargetFileType.ACCESS, pwd);
-                    InjectCodeToAccess(ref app, srcDir);
+                    InjectCodeToAccess(srcDir);
                 }
                 catch (Exception ex)
                 {
@@ -42,19 +41,27 @@ namespace VBA_Util
             }
             return true;
         }
-        private bool InjectCodeToAccess(ref Access.Application app, string srcDir)
+        private bool InjectCodeToAccess(string srcDir)
         {
-            foreach (var srcFile in Directory.GetFiles(srcDir,"*",SearchOption.AllDirectories))
+            // get project name(s)
+            foreach (VBProject vbp in AccApp.VBE.VBProjects)
             {
-                var fName = Path.GetFileNameWithoutExtension(srcFile);
-                string srcContent = null;
-                using (var sr = new StreamReader(srcFile, Encoding.UTF8))
+                var pjtName = vbp.Name;
+                // get project directory
+                var pjtDir = Directory.GetDirectories(srcDir, pjtName);
+                // skip when not found
+                if (pjtDir == null || pjtDir.Length == 0) continue;
+
+                foreach (var srcFile in Directory.GetFiles(pjtDir[0], "*", SearchOption.AllDirectories))
                 {
-                    srcContent = sr.ReadToEnd();
-                }
-                bool isFound = false;
-                foreach (VBProject vbp in app.VBE.VBProjects)
-                {
+                    var fName = Path.GetFileNameWithoutExtension(srcFile);
+                    if (fName == null || fName == "") continue;
+                    string srcContent = null;
+                    using (var sr = new StreamReader(srcFile, Encoding.UTF8))
+                    {
+                        srcContent = sr.ReadToEnd();
+                    }
+                    bool isFound = false;
                     foreach (VBComponent vbc in vbp.VBComponents)
                     {
                         CodeModule module = vbc.CodeModule;
@@ -64,58 +71,63 @@ namespace VBA_Util
                         {
                             if (vbc.Type == vbext_ComponentType.vbext_ct_Document)
                             {
-                                app.DoCmd.OpenForm(FormName: fName.Substring(5)
+                                AccApp.DoCmd.OpenForm(FormName: fName.Substring(5)
                                     , View: Access.AcFormView.acDesign
                                     , WindowMode: Access.AcWindowMode.acHidden);
+                                //AccApp.DoCmd.OpenForm(FormName: module.Name
+                                //    , View: Access.AcFormView.acDesign
+                                //    , WindowMode: Access.AcWindowMode.acHidden);
                             }
                             else
                             {
-                                app.DoCmd.OpenModule(module.Name);
+                                AccApp.DoCmd.OpenModule(module.Name);
                             }
-                            //app.DoCmd.OpenModule(module.Name);
+                            //AccApp.DoCmd.OpenModule(module.Name);
                             module.DeleteLines(1, module.CountOfLines);
                             module.AddFromString(srcContent);
                             if (vbc.Type == vbext_ComponentType.vbext_ct_Document)
                             {
-                                app.DoCmd.Save(Access.AcObjectType.acForm, fName.Substring(5));
+                                AccApp.DoCmd.Save(Access.AcObjectType.acForm, fName.Substring(5));
+                                //AccApp.DoCmd.Save(Access.AcObjectType.acForm, module.Name);
                             }
                             else
                             {
-                                app.DoCmd.Save(Access.AcObjectType.acModule, module.Name);
+                                AccApp.DoCmd.Save(Access.AcObjectType.acModule, module.Name);
                             }
-                            //app.DoCmd.Close(Access.AcObjectType.acModule, module.Name, Access.AcCloseSave.acSaveYes);
+                            //AccApp.DoCmd.Close(Access.AcObjectType.acModule, module.Name, Access.AcCloseSave.acSaveYes);
                             isFound = true;
                             break;
                         }
                     }
-                }
-                
-                // INSERT module when not found
-                if (!isFound)
-                {
-                    //Get sub-directories
-                    //Document,StdModule,ClassModule
-                    var dir = Directory.GetParent(srcFile).Name;
-                    var pjtName = Directory.GetParent(Directory.GetParent(srcFile).FullName).Name;
-                    vbext_ComponentType moduleType;
-                    if (Regex.IsMatch(dir, "StdModule"))
-                        moduleType = vbext_ComponentType.vbext_ct_StdModule;
-                    else if (Regex.IsMatch(dir, "ClassModule"))
-                        moduleType = vbext_ComponentType.vbext_ct_ClassModule;
-                    else continue;// DO NOT ADD form module via interop, use MS-ACCESS Export menu instead
-                    foreach (VBProject pjt in app.VBE.VBProjects)
+                    
+                    // INSERT module when not found
+                    if (!isFound)
                     {
-                        if (pjt.Name == pjtName)
+                        //Get sub-directories
+                        //Document,StdModule,ClassModule
+                        var dir = Directory.GetParent(srcFile).Name;
+                        //var pjtName = Directory.GetParent(Directory.GetParent(srcFile).FullName).Name;
+                        vbext_ComponentType moduleType;
+                        if (Regex.IsMatch(dir, "StdModule"))
+                            moduleType = vbext_ComponentType.vbext_ct_StdModule;
+                        else if (Regex.IsMatch(dir, "ClassModule"))
+                            moduleType = vbext_ComponentType.vbext_ct_ClassModule;
+                        else continue;// DO NOT ADD form module via interop, use MS-ACCESS Export menu instead
+                        foreach (VBProject pjt in AccApp.VBE.VBProjects)
                         {
-                            VBComponent module = pjt.VBComponents.Add(moduleType);
-                            module.Name = fName;
-                            module.CodeModule.DeleteLines(1, module.CodeModule.CountOfLines);
-                            module.CodeModule.AddFromString(srcContent);
-                            app.DoCmd.Save(Access.AcObjectType.acModule, fName);
-                            break;
+                            if (pjt.Name == pjtName)
+                            {
+                                VBComponent module = pjt.VBComponents.Add(moduleType);
+                                module.Name = fName;
+                                module.CodeModule.DeleteLines(1, module.CodeModule.CountOfLines);
+                                module.CodeModule.AddFromString(srcContent);
+                                AccApp.DoCmd.Save(Access.AcObjectType.acModule, fName);
+                                break;
+                            }
                         }
-                    }   
+                    }
                 }
+
             }
             return true;
         }
